@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "frontDoorConfigurations": {
+      "value": [
+        {
+          "name": "int-frontdoor-001",
+          "skuName": "Standard_AzureFrontDoor",
+          "tags": {
+            "environment": "int",
+            "purpose": "integration-testing-cdn"
+          },
+          "originGroups": [
+            {
+              "name": "int-origin-group",
+              "loadBalancingSettings": {
+                "sampleSize": 2,
+                "successfulSamplesRequired": 1,
+                "additionalLatencyInMilliseconds": 0
+              },
+              "healthProbeSettings": {
+                "probePath": "/health",
+                "probeRequestType": "GET",
+                "probeProtocol": "Https",
+                "probeIntervalInSeconds": 60
+              },
+              "sessionAffinityState": "Disabled",
+              "origins": [
+                {
+                  "name": "int-app-service-1",
+                  "hostName": "int-app1.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                },
+                {
+                  "name": "int-app-service-2",
+                  "hostName": "int-app2.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "name": "int-endpoint"
+            }
+          ],
+          "routes": [
+            {
+              "name": "default-route",
+              "endpointIndex": 0,
+              "originGroupIndex": 0,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/*"],
+              "forwardingProtocol": "MatchRequest",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled",
+              "customDomainIndex": 0
+            }
+          ],
+          "customDomains": [
+            {
+              "hostName": "int.example.com",
+              "certificateName": "int-example-com",
+              "minimumTlsVersion": "TLS12"
+            }
+          ]
+        }
+      ]
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "int-kv-001",
+        "keyVaultResourceGroupName": "int-security-rg",
+        "certificateNames": ["int-example-com"]
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "QA Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure",
+        "dataClassification": "Non-Production"
+      }
+    }
+  }
+}

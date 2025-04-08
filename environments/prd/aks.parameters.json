@@ -1,0 +1,168 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "aksConfigurations": {
+      "value": [
+        {
+          "name": "prd-aks-cluster-001",
+          "kubernetesVersion": "1.28.3",
+          "tags": {
+            "environment": "prd",
+            "purpose": "production-cluster"
+          },
+          "vnetName": "prd-vnet-001",
+          "vnetResourceGroupName": "prd-network-rg",
+          "subnetName": "aks-subnet",
+          "podCidr": "10.244.0.0/16",
+          "serviceCidr": "10.0.0.0/16",
+          "dnsServiceIP": "10.0.0.10",
+          "dockerBridgeCidr": "172.17.0.1/16",
+          "systemNodePool": {
+            "name": "system",
+            "count": 3,
+            "vmSize": "Standard_D4s_v3",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "maxPods": 30,
+            "minCount": 3,
+            "maxCount": 5,
+            "enableAutoScaling": true,
+            "mode": "System",
+            "availabilityZones": [
+              "1", "2", "3"
+            ]
+          },
+          "userNodePools": [
+            {
+              "name": "userpool1",
+              "count": 3,
+              "vmSize": "Standard_D8s_v3",
+              "osDiskSizeGB": 256,
+              "osDiskType": "Managed",
+              "maxPods": 50,
+              "minCount": 3,
+              "maxCount": 10,
+              "enableAutoScaling": true,
+              "availabilityZones": [
+                "1", "2", "3"
+              ]
+            },
+            {
+              "name": "userpool2",
+              "count": 2,
+              "vmSize": "Standard_D4s_v3",
+              "osDiskSizeGB": 128,
+              "osDiskType": "Managed",
+              "maxPods": 30,
+              "minCount": 2,
+              "maxCount": 5,
+              "enableAutoScaling": true,
+              "availabilityZones": [
+                "1", "2", "3"
+              ]
+            }
+          ],
+          "acrName": "prdacrcentral001",
+          "acrResourceGroupName": "prd-registry-rg",
+          "keyVaultName": "prd-kv-001",
+          "keyVaultResourceGroupName": "prd-security-rg",
+          "sqlServerName": "prd-sql-001",
+          "sqlServerResourceGroupName": "prd-database-rg",
+          "storageAccountName": "prdstgacct001",
+          "storageAccountResourceGroupName": "prd-storage-rg",
+          "enableWorkloadIdentity": true,
+          "addonProfiles": {
+            "azurePolicy": {
+              "enabled": true
+            },
+            "azureKeyvaultSecretsProvider": {
+              "enabled": true,
+              "config": {
+                "enableSecretRotation": "true",
+                "rotationPollInterval": "2m"
+              }
+            },
+            "omsAgent": {
+              "enabled": true
+            },
+            "ingressApplicationGateway": {
+              "enabled": false
+            },
+            "openServiceMesh": {
+              "enabled": false
+            }
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "prd-vnet-001",
+        "vnetResourceGroupName": "prd-network-rg",
+        "subnetName": "aks-subnet"
+      }
+    },
+    "acrConfiguration": {
+      "value": {
+        "acrName": "prdacrcentral001",
+        "acrResourceGroupName": "prd-registry-rg"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "prd-kv-001",
+        "keyVaultResourceGroupName": "prd-security-rg"
+      }
+    },
+    "sqlConfiguration": {
+      "value": {
+        "sqlServerName": "prd-sql-001",
+        "sqlServerResourceGroupName": "prd-database-rg"
+      }
+    },
+    "storageConfiguration": {
+      "value": {
+        "storageAccountName": "prdstgacct001",
+        "storageAccountResourceGroupName": "prd-storage-rg"
+      }
+    },
+    "managedIdentitiesConfig": {
+      "value": {
+        "createIdentities": true,
+        "clusterIdentity": {
+          "name": "prd-aks-cluster-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "acrIdentity": {
+          "name": "prd-aks-acr-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "keyVaultIdentity": {
+          "name": "prd-aks-kv-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "sqlIdentity": {
+          "name": "prd-aks-sql-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "storageIdentity": {
+          "name": "prd-aks-storage-identity",
+          "resourceGroupName": "prd-identity-rg"
+        }
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Production Team",
+        "costCenter": "34567",
+        "project": "Production",
+        "dataClassification": "Confidential",
+        "businessCriticality": "High"
+      }
+    }
+  }
+}

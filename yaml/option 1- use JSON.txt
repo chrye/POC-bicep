@@ -1,0 +1,11 @@
+Build dynamic pipelines with a complex JSON object.
+
+I rearranged the GEO-ENV-ServiceConnection info differently and please see the attached JSON file. 
+
+Basically you’d specify each combination individually instead of lumping them together under GEO.
+
+And in your pipeline, you can read out from the JSON file, looping through and parse out each field. 
+I did several variations and passing the JSON around as variable won’t work as that strips out the double quotes. 
+
+So you’d need to read/parse/use the content altogether, look in the 'Read and Print' section. 
+If ServiceConnectionName cannot take a variable value while calling a template, then you can define a parameter and switch the variable value out with the corresponding parameter.

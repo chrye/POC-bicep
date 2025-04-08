@@ -1,0 +1,149 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "aksConfigurations": {
+      "value": [
+        {
+          "name": "dev-aks-cluster-001",
+          "kubernetesVersion": "1.28.3",
+          "tags": {
+            "environment": "dev",
+            "purpose": "development-cluster"
+          },
+          "vnetName": "dev-vnet-001",
+          "vnetResourceGroupName": "dev-network-rg",
+          "subnetName": "aks-subnet",
+          "podCidr": "10.244.0.0/16",
+          "serviceCidr": "10.0.0.0/16",
+          "dnsServiceIP": "10.0.0.10",
+          "dockerBridgeCidr": "172.17.0.1/16",
+          "systemNodePool": {
+            "name": "system",
+            "count": 1,
+            "vmSize": "Standard_D2s_v3",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "maxPods": 30,
+            "minCount": 1,
+            "maxCount": 3,
+            "enableAutoScaling": true,
+            "mode": "System",
+            "availabilityZones": [
+              "1"
+            ]
+          },
+          "userNodePools": [
+            {
+              "name": "userpool1",
+              "count": 1,
+              "vmSize": "Standard_D4s_v3",
+              "osDiskSizeGB": 128,
+              "osDiskType": "Managed",
+              "maxPods": 30,
+              "minCount": 1,
+              "maxCount": 3,
+              "enableAutoScaling": true,
+              "availabilityZones": [
+                "1"
+              ]
+            }
+          ],
+          "acrName": "devacrcentral001",
+          "acrResourceGroupName": "dev-registry-rg",
+          "keyVaultName": "dev-kv-001",
+          "keyVaultResourceGroupName": "dev-security-rg",
+          "enableWorkloadIdentity": true,
+          "addonProfiles": {
+            "azurePolicy": {
+              "enabled": false
+            },
+            "azureKeyvaultSecretsProvider": {
+              "enabled": true,
+              "config": {
+                "enableSecretRotation": "true",
+                "rotationPollInterval": "2m"
+              }
+            },
+            "omsAgent": {
+              "enabled": false
+            }
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "dev-vnet-001",
+        "vnetResourceGroupName": "dev-network-rg",
+        "subnetName": "aks-subnet"
+      }
+    },
+    "acrConfiguration": {
+      "value": {
+        "acrName": "devacrcentral001",
+        "acrResourceGroupName": "dev-registry-rg"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "dev-kv-001",
+        "keyVaultResourceGroupName": "dev-security-rg",
+        "secretNames": [
+          "db-connection-string",
+          "api-key",
+          "storage-account-key",
+          "redis-connection-string",
+          "appinsights-instrumentation-key"
+        ]
+      }
+    },
+    "sqlConfiguration": {
+      "value": {
+        "sqlServerName": "dev-sql-001",
+        "sqlServerResourceGroupName": "dev-database-rg"
+      }
+    },
+    "storageConfiguration": {
+      "value": {
+        "storageAccountName": "devstgacct001",
+        "storageAccountResourceGroupName": "dev-storage-rg"
+      }
+    },
+    "managedIdentitiesConfig": {
+      "value": {
+        "createIdentities": true,
+        "clusterIdentity": {
+          "name": "dev-aks-cluster-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "acrIdentity": {
+          "name": "dev-aks-acr-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "keyVaultIdentity": {
+          "name": "dev-aks-kv-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "sqlIdentity": {
+          "name": "dev-aks-sql-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "storageIdentity": {
+          "name": "dev-aks-storage-identity",
+          "resourceGroupName": "dev-identity-rg"
+        }
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Development Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure"
+      }
+    }
+  }
+}

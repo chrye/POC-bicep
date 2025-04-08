@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "prdacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry"
+          },
+          "privateEndpoint": {
+            "enabled": true,
+            "subnetId": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/virtualNetworks/prd-vnet-001/subnets/special-acr-subnet", 
+            "privateDnsZoneId": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurecr.io",
+            "groupIds": ["registry"]
+          }
+        },
+        {
+          "name": "prdacreast001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "prdacrwest001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry"
+          },
+          "certificate": {
+            "enabled": false
+          }
+        },
+        {
+          "name": "prdacrsouth001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "prdacrcentral002",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry-dr"
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "prd-vnet-001",
+        "vnetResourceGroupName": "prd-network-rg",
+        "subnetName": "acr-subnet"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "prd-kv-001",
+        "keyVaultResourceGroupName": "prd-security-rg",
+        "certificateName": "prd-cert-001"
+      }
+    },
+    "privateDnsZoneId": {
+      "value": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurecr.io"
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Production Team",
+        "costCenter": "34567",
+        "project": "Production",
+        "dataClassification": "Confidential",
+        "businessCriticality": "High"
+      }
+    }
+  }
+}

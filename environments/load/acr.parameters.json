@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "loadacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": true,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "load",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "loadacreast001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "load",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "loadacreast002",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "ipRules": [
+            {
+              "value": "203.0.113.0/24",
+              "action": "Allow"
+            }
+          ],
+          "tags": {
+            "environment": "load",
+            "purpose": "container-registry-testing"
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "load-vnet-001",
+        "vnetResourceGroupName": "load-network-rg",
+        "subnetName": "acr-subnet"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "load-kv-001",
+        "keyVaultResourceGroupName": "load-security-rg",
+        "certificateName": "load-cert-001"
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Load Test Team",
+        "costCenter": "12345",
+        "project": "Performance Testing"
+      }
+    }
+  }
+}

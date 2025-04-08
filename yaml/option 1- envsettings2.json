@@ -1,0 +1,77 @@
+[
+  {
+    "GEO": "AME",
+    "Environment": "PRD",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "BCP",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "CNT1",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "STG",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "STG2",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "LOD",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PREPROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "DEV",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PREPROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "DEV1",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PREPROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "DEV2",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PREPROD"
+  },
+  {
+    "GEO": "AME",
+    "Environment": "QAS",
+    "ServiceConnection": "AzureRM_AME_AUDIT_PREPROD"
+  },
+  {
+    "GEO": "EMA",
+    "Environment": "PRD",
+    "ServiceConnection": "AzureRM_EMA_AUDIT_PROD"
+  },
+  {
+    "GEO": "EMA",
+    "Environment": "BCP",
+    "ServiceConnection": "AzureRM_EMA_AUDIT_PROD"
+  },
+  {
+    "GEO": "EMA",
+    "Environment": "INT",
+    "ServiceConnection": "AzureRM_EMA_AUDIT_PROD"
+  },
+  {
+    "GEO": "EMA",
+    "Environment": "STG",
+    "ServiceConnection": "AzureRM_EMA_AUDIT_PROD"
+  },
+  {
+    "GEO": "EMA",
+    "Environment": "STG3",
+    "ServiceConnection": "AzureRM_EMA_AUDIT_PROD"
+  }
+]

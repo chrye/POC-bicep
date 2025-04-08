@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "devacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": true,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "dev",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "devacreast001",
+          "skuName": "Standard",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "dev",
+            "purpose": "container-registry"
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "dev-vnet-001",
+        "vnetResourceGroupName": "dev-network-rg",
+        "subnetName": "acr-subnet"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "dev-kv-001",
+        "keyVaultResourceGroupName": "dev-security-rg",
+        "certificateName": "dev-cert-001"
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Cloud Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure"
+      }
+    }
+  }
+}

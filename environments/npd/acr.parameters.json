@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "npdacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "npd",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "npdacreast001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "npd",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "npdacrwest001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "npd",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "npdacrsouth001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "npd",
+            "purpose": "container-registry"
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "npd-vnet-001",
+        "vnetResourceGroupName": "npd-network-rg",
+        "subnetName": "acr-subnet"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "npd-kv-001",
+        "keyVaultResourceGroupName": "npd-security-rg",
+        "certificateName": "npd-cert-001"
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "NPD Team",
+        "costCenter": "23456",
+        "project": "Pre-Production",
+        "dataClassification": "Internal"
+      }
+    }
+  }
+}

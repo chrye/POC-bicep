@@ -1,0 +1,92 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: PrepStage
+  displayName: 'Stage 1 - Prep'
+  jobs:
+  - job: SetConfigsJob
+    displayName: 'JOB: Install jq and Set connConfigs'
+    steps:
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+      displayName: 'Install jq'
+    - script: |
+        echo "Reading from envsettings2.json..."
+        connConfigs=$(jq -c '.' envsettings2.json)
+        echo $connConfigs   # works: prints out the full json content 
+    
+        echo "##vso[task.setvariable variable=connConfigs;isOutput=true]$connConfigs"
+    
+        echo "##vso[task.setvariable variable=myVar]Hello, Local-Variable!"
+        echo "##vso[task.setvariable variable=myVar2;isOutput=true]Hello, Out-Variable!"
+      name: SetVariableStep
+      displayName: 'Set Variable'
+    - script: |
+        echo "The value of myVar is: $(myVar)"  # works
+        echo "The value of myVar2 is: $(myVar2)"    # doesn't work
+        echo "The value of myVar2 is: $(SetVariableStep.myVar2)" # works
+
+        echo "The value of myVar is: $(SetVariableStep.connConfigs)" # works, but stripped of double quotes
+      displayName: 'Print Variable'
+  - job: Job2Step1
+    displayName: 'JOB: Job2Step1'
+    dependsOn: SetConfigsJob
+    variables:
+      myVar10: $[ dependencies.SetConfigsJob.outputs['SetVariableStep.myVar'] ]
+      myVar11: $[ dependencies.SetConfigsJob.outputs['SetVariableStep.myVar2'] ]
+      deps: $[convertToJson(dependencies)] # create a variable with the job dependencies
+    steps:
+    - script: |
+        echo "The value of myVar10 is: $(myVar10)"  # doesn't work
+        echo "The value of myVar11 is: $(myVar11)"  # works
+        echo "The value of myVar is: $(dependencies.SetConfigsJob.outputs['SetVariableStep.myVar'])"    # doesn't work
+        echo "The value of myVar2 is: $(dependencies.SetConfigsJob.outputs['SetVariableStep.myVar2'])" # doesn't work
+        echo "The value of myVar2 is: $(dependencies.SetConfigsJob.outputs['SetVariableStep.myVar2'])" # doesn't work
+      displayName: 'Variable Test'
+    #- powershell: Write-Host "$(deps)"
+
+- stage: UseConfigStage
+  displayName: 'Stage 2 - Use connConfigs'
+  dependsOn: PrepStage
+  variables:
+    myVar100: $[ stageDependencies.PrepStage.SetConfigsJob.outputs['SetVariableStep.myVar2'] ]
+    varConnConfigs: $[ stageDependencies.PrepStage.SetConfigsJob.outputs['SetVariableStep.connConfigs'] ]
+  jobs:
+  - job: PrintVariableJob
+    displayName: 'JOB: Print Variable'
+    steps:
+    - script: |
+        echo "The value of myVar100 is: $(myVar100)"  # works
+        echo "The value of varConnConfigs is: $(varConnConfigs)"  # works, but stripped of double quotes
+      displayName: 'Print Variable'
+    - script: |
+        echo "Raw varConnConfigs: $(varConnConfigs)"
+        echo "$(varConnConfigs)" | jq -c '.[]' | while read config; do  # does not work, missing double quotes
+           echo $config
+        done
+      displayName: 'Parse Print All Configs'
+    - script: |
+        varConnConfigs2='[{"GEO":"AME","Environment":"PRD","ServiceConnection":"AzureRM_AME_AUDIT_PROD"},{"GEO":"AME","Environment":"BCP","ServiceConnection":"AzureRM_AME_AUDIT_PROD"},{"GEO":"AME","Environment":"CNT1","ServiceConnection":"AzureRM_AME_AUDIT_PROD"},{"GEO":"AME","Environment":"STG","ServiceConnection":"AzureRM_AME_AUDIT_PROD"},{"GEO":"AME","Environment":"STG2","ServiceConnection":"AzureRM_AME_AUDIT_PROD"},{"GEO":"AME","Environment":"LOD","ServiceConnection":"AzureRM_AME_AUDIT_PREPROD"},{"GEO":"AME","Environment":"DEV","ServiceConnection":"AzureRM_AME_AUDIT_PREPROD"},{"GEO":"AME","Environment":"DEV1","ServiceConnection":"AzureRM_AME_AUDIT_PREPROD"},{"GEO":"AME","Environment":"DEV2","ServiceConnection":"AzureRM_AME_AUDIT_PREPROD"},{"GEO":"AME","Environment":"QAS","ServiceConnection":"AzureRM_AME_AUDIT_PREPROD"},{"GEO":"EMA","Environment":"PRD","ServiceConnection":"AzureRM_EMA_AUDIT_PROD"},{"GEO":"EMA","Environment":"BCP","ServiceConnection":"AzureRM_EMA_AUDIT_PROD"},{"GEO":"EMA","Environment":"INT","ServiceConnection":"AzureRM_EMA_AUDIT_PROD"},{"GEO":"EMA","Environment":"STG","ServiceConnection":"AzureRM_EMA_AUDIT_PROD"},{"GEO":"EMA","Environment":"STG3","ServiceConnection":"AzureRM_EMA_AUDIT_PROD"}]'
+        echo $varConnConfigs2
+        
+        echo $varConnConfigs2 | jq -c '.[]' | while read config; do # works
+           echo $config
+        done
+      displayName: 'Parse Print Configs Hardcoded'
+    - script: |
+        jq -c '.[]' envsettings2.json | while read row; do
+           echo $row
+           geo=$(echo $row | jq -r '.GEO')
+           environment=$(echo $row | jq -r '.Environment')
+           serviceConnectionName=$(echo $row | jq -r '.ServiceConnection')
+           echo $geo, $environment, $serviceConnectionName
+
+           ## DO YOUR CUSTOM STUFF HERE
+        done
+      displayName: 'Read and Print'
+

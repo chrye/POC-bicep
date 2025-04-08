@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "frontDoorConfigurations": {
+      "value": [
+        {
+          "name": "dev-frontdoor-001",
+          "skuName": "Standard_AzureFrontDoor",
+          "tags": {
+            "environment": "dev",
+            "purpose": "development-cdn"
+          },
+          "originGroups": [
+            {
+              "name": "dev-origin-group",
+              "loadBalancingSettings": {
+                "sampleSize": 2,
+                "successfulSamplesRequired": 1,
+                "additionalLatencyInMilliseconds": 0
+              },
+              "healthProbeSettings": {
+                "probePath": "/health",
+                "probeRequestType": "GET",
+                "probeProtocol": "Http",
+                "probeIntervalInSeconds": 60
+              },
+              "sessionAffinityState": "Disabled",
+              "origins": [
+                {
+                  "name": "dev-app-service",
+                  "hostName": "dev-app.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "name": "dev-endpoint"
+            }
+          ],
+          "routes": [
+            {
+              "name": "default-route",
+              "endpointIndex": 0,
+              "originGroupIndex": 0,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/*"],
+              "forwardingProtocol": "MatchRequest",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled"
+            }
+          ],
+          "customDomains": []
+        }
+      ]
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "dev-kv-001",
+        "keyVaultResourceGroupName": "dev-security-rg",
+        "certificateNames": []
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Development Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure",
+        "dataClassification": "Non-Production"
+      }
+    }
+  }
+}

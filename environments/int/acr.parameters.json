@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "intacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": true,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "int",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "intacreast001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "int",
+            "purpose": "container-registry"
+          }
+        },
+        {
+          "name": "intacrwest001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "int",
+            "purpose": "container-registry"
+          }
+        }
+      ]
+    },
+    "vnetConfiguration": {
+      "value": {
+        "vnetName": "int-vnet-001",
+        "vnetResourceGroupName": "int-network-rg",
+        "subnetName": "acr-subnet"
+      }
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "int-kv-001",
+        "keyVaultResourceGroupName": "int-security-rg",
+        "certificateName": "int-cert-001"
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Cloud Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure"
+      }
+    }
+  }
+}

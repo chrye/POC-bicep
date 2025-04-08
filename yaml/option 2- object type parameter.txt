@@ -1,0 +1,41 @@
+Instead of use JSON, we switch to use object type parameter and defining the same structure:
+
+- name: envsettings
+    type: object
+    default:
+      - GEO: GEO1
+        serviceConnection: "<scName1>"        
+        Environments:
+          - PRD
+          - STG
+          - STG2
+          - STG3
+      - GEO: GEO2
+        serviceConnection: "<scName2>"        
+        Environments:
+          - STG
+          - PRD 
+          - BCP
+
+Then we created the stages based on the parameter. Since this parameter is an array, we can iterate, but ServiceConnectionName should be passed explicitly, if we pass it from the array it wont work since should be available at build time. So the file solution looks similar to this:
+
+stages:
+  - ${{ each envSetting in parameters.envsettings }}:
+      - ${{ if eq(envSetting.serviceConnection, '<scName1>') }}:
+        - ${{ each env in envSetting.Environments }}:          
+          - template: stages/create-budget.yml
+            parameters:
+serviceConnectionName: <scName1>
+              environment: ${{ env }}
+                geo: ${{ envSetting .GEO }}
+      - ${{ if eq(envSetting.serviceConnection, ‘<scName2>') }}:
+        - ${{ each env in envSetting.Environments }}:            
+          - template: stages/create-budget.yml
+            parameters:
+                serviceConnectionName: <scName2>
+              environment: ${{ env }}
+geo: ${{ envSetting .GEO }}
+…
+
+Then we can use serviceConnectionName within the stage. 
+

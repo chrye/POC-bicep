@@ -1,0 +1,290 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "vnetConfig": {
+      "value": {
+        "name": "prd-hub-vnet-001",
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "acr-subnet",
+            "addressPrefix": "10.0.1.0/24",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.ContainerRegistry",
+                "locations": ["*"]
+              }
+            ],
+            "privateEndpointNetworkPolicies": "Disabled"
+          },
+          {
+            "name": "aks-subnet",
+            "addressPrefix": "10.0.2.0/23",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.ContainerRegistry",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.KeyVault",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.Storage",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.Sql",
+                "locations": ["*"]
+              }
+            ],
+            "privateEndpointNetworkPolicies": "Enabled"
+          },
+          {
+            "name": "pe-subnet",
+            "addressPrefix": "10.0.4.0/24",
+            "privateEndpointNetworkPolicies": "Disabled"
+          },
+          {
+            "name": "mgmt-subnet",
+            "addressPrefix": "10.0.5.0/24",
+            "privateEndpointNetworkPolicies": "Enabled"
+          }
+        ],
+        "serviceSubnets": {
+          "acr": "acr-subnet",
+          "aks": "aks-subnet",
+          "privateEndpoints": "pe-subnet"
+        },
+        "tags": {
+          "purpose": "core-network",
+          "environment": "prd"
+        }
+      }
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "prdacrcentral001",
+          "skuName": "Premium",
+          "adminUserEnabled": false,
+          "allowPublicAccess": false,
+          "tags": {
+            "environment": "prd",
+            "purpose": "container-registry"
+          },
+          "privateEndpoint": {
+            "enabled": true,
+            "groupIds": ["registry"]
+          }
+        }
+      ]
+    },
+    "aksConfigurations": {
+      "value": [
+        {
+          "name": "prd-aks-cluster-001",
+          "kubernetesVersion": "1.28.3",
+          "tags": {
+            "environment": "prd",
+            "purpose": "production-cluster"
+          },
+          "podCidr": "10.244.0.0/16",
+          "serviceCidr": "10.0.0.0/16",
+          "dnsServiceIP": "10.0.0.10",
+          "dockerBridgeCidr": "172.17.0.1/16",
+          "systemNodePool": {
+            "name": "system",
+            "count": 3,
+            "vmSize": "Standard_D4s_v3",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "maxPods": 30,
+            "minCount": 3,
+            "maxCount": 5,
+            "enableAutoScaling": true,
+            "mode": "System",
+            "availabilityZones": [
+              "1", "2", "3"
+            ]
+          },
+          "userNodePools": [
+            {
+              "name": "userpool1",
+              "count": 3,
+              "vmSize": "Standard_D8s_v3",
+              "osDiskSizeGB": 256,
+              "osDiskType": "Managed",
+              "maxPods": 50,
+              "minCount": 3,
+              "maxCount": 10,
+              "enableAutoScaling": true,
+              "availabilityZones": [
+                "1", "2", "3"
+              ]
+            }
+          ],
+          "enableWorkloadIdentity": true,
+          "addonProfiles": {
+            "azurePolicy": {
+              "enabled": true
+            },
+            "azureKeyvaultSecretsProvider": {
+              "enabled": true,
+              "config": {
+                "enableSecretRotation": "true",
+                "rotationPollInterval": "2m"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "frontDoorConfigurations": {
+      "value": [
+        {
+          "name": "prd-frontdoor-001",
+          "skuName": "Premium_AzureFrontDoor",
+          "tags": {
+            "environment": "prd",
+            "purpose": "global-load-balancer"
+          },
+          "originGroups": [
+            {
+              "name": "aks-origin-group",
+              "loadBalancingSettings": {
+                "sampleSize": 4,
+                "successfulSamplesRequired": 3,
+                "additionalLatencyInMilliseconds": 50
+              },
+              "healthProbeSettings": {
+                "probePath": "/health",
+                "probeRequestType": "HEAD",
+                "probeProtocol": "Https",
+                "probeIntervalInSeconds": 100
+              },
+              "sessionAffinityState": "Disabled",
+              "origins": [
+                {
+                  "name": "aks-app-service-1",
+                  "hostName": "app1.prd-aks-cluster-001.eastus2.cloudapp.azure.com",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                },
+                {
+                  "name": "aks-app-service-2",
+                  "hostName": "app2.prd-aks-cluster-001.eastus2.cloudapp.azure.com",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 2,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "name": "prd-endpoint"
+            }
+          ],
+          "routes": [
+            {
+              "name": "default-route",
+              "endpointIndex": 0,
+              "originGroupIndex": 0,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/*"],
+              "forwardingProtocol": "HttpsOnly",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled",
+              "customDomainIndex": 0
+            }
+          ],
+          "customDomains": [
+            {
+              "hostName": "api.example.com",
+              "certificateName": "api-example-com",
+              "minimumTlsVersion": "TLS12"
+            }
+          ],
+          "certificateNames": ["api-example-com"]
+        }
+      ]
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "prd-kv-001",
+        "keyVaultResourceGroupName": "prd-security-rg",
+        "certificateName": "prd-cert-001",
+        "certificateNames": ["api-example-com"]
+      }
+    },
+    "sqlConfiguration": {
+      "value": {
+        "sqlServerName": "prd-sql-001",
+        "sqlServerResourceGroupName": "prd-database-rg"
+      }
+    },
+    "storageConfiguration": {
+      "value": {
+        "storageAccountName": "prdstgacct001",
+        "storageAccountResourceGroupName": "prd-storage-rg"
+      }
+    },
+    "privateDnsZones": {
+      "value": {
+        "acr": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.azurecr.io",
+        "keyvault": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net",
+        "sql": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.database.windows.net",
+        "blob": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net",
+        "file": "/subscriptions/{subscriptionId}/resourceGroups/prd-network-rg/providers/Microsoft.Network/privateDnsZones/privatelink.file.core.windows.net"
+      }
+    },
+    "managedIdentitiesConfig": {
+      "value": {
+        "createIdentities": true,
+        "clusterIdentity": {
+          "name": "prd-aks-cluster-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "acrIdentity": {
+          "name": "prd-aks-acr-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "keyVaultIdentity": {
+          "name": "prd-aks-kv-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "sqlIdentity": {
+          "name": "prd-aks-sql-identity",
+          "resourceGroupName": "prd-identity-rg"
+        },
+        "storageIdentity": {
+          "name": "prd-aks-storage-identity",
+          "resourceGroupName": "prd-identity-rg"
+        }
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Production Team",
+        "costCenter": "34567",
+        "project": "Production",
+        "dataClassification": "Confidential",
+        "businessCriticality": "High"
+      }
+    }
+  }
+}

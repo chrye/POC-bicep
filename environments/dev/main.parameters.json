@@ -1,0 +1,273 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "vnetConfig": {
+      "value": {
+        "name": "dev-vnet-001",
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.100.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "acr-subnet",
+            "addressPrefix": "10.100.1.0/24",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.ContainerRegistry",
+                "locations": ["*"]
+              }
+            ],
+            "privateEndpointNetworkPolicies": "Disabled"
+          },
+          {
+            "name": "aks-subnet",
+            "addressPrefix": "10.100.2.0/23",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.ContainerRegistry",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.KeyVault",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.Storage",
+                "locations": ["*"]
+              },
+              {
+                "service": "Microsoft.Sql",
+                "locations": ["*"]
+              }
+            ],
+            "privateEndpointNetworkPolicies": "Enabled"
+          },
+          {
+            "name": "pe-subnet",
+            "addressPrefix": "10.100.4.0/24",
+            "privateEndpointNetworkPolicies": "Disabled"
+          },
+          {
+            "name": "mgmt-subnet",
+            "addressPrefix": "10.100.5.0/24",
+            "privateEndpointNetworkPolicies": "Enabled"
+          }
+        ],
+        "serviceSubnets": {
+          "acr": "acr-subnet",
+          "aks": "aks-subnet",
+          "privateEndpoints": "pe-subnet"
+        },
+        "tags": {
+          "purpose": "development-network",
+          "environment": "dev"
+        }
+      }
+    },
+    "acrConfigurations": {
+      "value": [
+        {
+          "name": "devacrcentral001",
+          "skuName": "Standard",
+          "adminUserEnabled": true,
+          "allowPublicAccess": true,
+          "tags": {
+            "environment": "dev",
+            "purpose": "development-registry"
+          },
+          "privateEndpoint": {
+            "enabled": false
+          }
+        }
+      ]
+    },
+    "aksConfigurations": {
+      "value": [
+        {
+          "name": "dev-aks-cluster-001",
+          "kubernetesVersion": "1.28.3",
+          "tags": {
+            "environment": "dev",
+            "purpose": "development-cluster"
+          },
+          "podCidr": "10.244.0.0/16",
+          "serviceCidr": "10.0.0.0/16",
+          "dnsServiceIP": "10.0.0.10",
+          "dockerBridgeCidr": "172.17.0.1/16",
+          "systemNodePool": {
+            "name": "system",
+            "count": 1,
+            "vmSize": "Standard_D2s_v3",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "maxPods": 30,
+            "minCount": 1,
+            "maxCount": 3,
+            "enableAutoScaling": true,
+            "mode": "System",
+            "availabilityZones": [
+              "1"
+            ]
+          },
+          "userNodePools": [
+            {
+              "name": "userpool1",
+              "count": 1,
+              "vmSize": "Standard_D4s_v3",
+              "osDiskSizeGB": 128,
+              "osDiskType": "Managed",
+              "maxPods": 30,
+              "minCount": 1,
+              "maxCount": 3,
+              "enableAutoScaling": true,
+              "availabilityZones": [
+                "1"
+              ]
+            }
+          ],
+          "enableWorkloadIdentity": true,
+          "addonProfiles": {
+            "azurePolicy": {
+              "enabled": false
+            },
+            "azureKeyvaultSecretsProvider": {
+              "enabled": true,
+              "config": {
+                "enableSecretRotation": "true",
+                "rotationPollInterval": "2m"
+              }
+            },
+            "omsAgent": {
+              "enabled": false
+            }
+          }
+        }
+      ]
+    },
+    "frontDoorConfigurations": {
+      "value": [
+        {
+          "name": "dev-frontdoor-001",
+          "skuName": "Standard_AzureFrontDoor",
+          "tags": {
+            "environment": "dev",
+            "purpose": "development-cdn"
+          },
+          "originGroups": [
+            {
+              "name": "dev-origin-group",
+              "loadBalancingSettings": {
+                "sampleSize": 2,
+                "successfulSamplesRequired": 1,
+                "additionalLatencyInMilliseconds": 0
+              },
+              "healthProbeSettings": {
+                "probePath": "/health",
+                "probeRequestType": "GET",
+                "probeProtocol": "Http",
+                "probeIntervalInSeconds": 60
+              },
+              "sessionAffinityState": "Disabled",
+              "origins": [
+                {
+                  "name": "dev-app-service",
+                  "hostName": "dev-app.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "name": "dev-endpoint"
+            }
+          ],
+          "routes": [
+            {
+              "name": "default-route",
+              "endpointIndex": 0,
+              "originGroupIndex": 0,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/*"],
+              "forwardingProtocol": "MatchRequest",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled"
+            }
+          ],
+          "customDomains": []
+        }
+      ]
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "dev-kv-001",
+        "keyVaultResourceGroupName": "dev-security-rg",
+        "certificateNames": []
+      }
+    },
+    "sqlConfiguration": {
+      "value": {
+        "sqlServerName": "dev-sql-001",
+        "sqlServerResourceGroupName": "dev-database-rg"
+      }
+    },
+    "storageConfiguration": {
+      "value": {
+        "storageAccountName": "devstgacct001",
+        "storageAccountResourceGroupName": "dev-storage-rg"
+      }
+    },
+    "privateDnsZones": {
+      "value": {
+        "acr": "",
+        "keyvault": "",
+        "sql": "",
+        "blob": "",
+        "file": ""
+      }
+    },
+    "managedIdentitiesConfig": {
+      "value": {
+        "createIdentities": true,
+        "clusterIdentity": {
+          "name": "dev-aks-cluster-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "acrIdentity": {
+          "name": "dev-aks-acr-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "keyVaultIdentity": {
+          "name": "dev-aks-kv-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "sqlIdentity": {
+          "name": "dev-aks-sql-identity",
+          "resourceGroupName": "dev-identity-rg"
+        },
+        "storageIdentity": {
+          "name": "dev-aks-storage-identity",
+          "resourceGroupName": "dev-identity-rg"
+        }
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Development Team",
+        "costCenter": "12345",
+        "project": "Core Infrastructure",
+        "dataClassification": "Non-Production"
+      }
+    }
+  }
+}

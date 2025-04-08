@@ -1,0 +1,168 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus2"
+    },
+    "frontDoorConfigurations": {
+      "value": [
+        {
+          "name": "load-frontdoor-001",
+          "skuName": "Premium_AzureFrontDoor",
+          "tags": {
+            "environment": "load",
+            "purpose": "load-testing-cdn"
+          },
+          "originGroups": [
+            {
+              "name": "load-origin-group",
+              "loadBalancingSettings": {
+                "sampleSize": 4,
+                "successfulSamplesRequired": 2,
+                "additionalLatencyInMilliseconds": 50
+              },
+              "healthProbeSettings": {
+                "probePath": "/health",
+                "probeRequestType": "GET",
+                "probeProtocol": "Https",
+                "probeIntervalInSeconds": 30
+              },
+              "sessionAffinityState": "Enabled",
+              "origins": [
+                {
+                  "name": "load-app-service-1",
+                  "hostName": "load-app1.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 500,
+                  "enforceCertificateNameCheck": true
+                },
+                {
+                  "name": "load-app-service-2",
+                  "hostName": "load-app2.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 500,
+                  "enforceCertificateNameCheck": true
+                },
+                {
+                  "name": "load-app-service-3",
+                  "hostName": "load-app3.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 2,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            },
+            {
+              "name": "load-api-group",
+              "loadBalancingSettings": {
+                "sampleSize": 4,
+                "successfulSamplesRequired": 2,
+                "additionalLatencyInMilliseconds": 25
+              },
+              "healthProbeSettings": {
+                "probePath": "/api/health",
+                "probeRequestType": "GET",
+                "probeProtocol": "Https",
+                "probeIntervalInSeconds": 30
+              },
+              "sessionAffinityState": "Enabled",
+              "origins": [
+                {
+                  "name": "load-api-service-1",
+                  "hostName": "load-api1.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                },
+                {
+                  "name": "load-api-service-2",
+                  "hostName": "load-api2.azurewebsites.net",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 1000,
+                  "enforceCertificateNameCheck": true
+                }
+              ]
+            }
+          ],
+          "endpoints": [
+            {
+              "name": "load-web-endpoint"
+            },
+            {
+              "name": "load-api-endpoint"
+            }
+          ],
+          "routes": [
+            {
+              "name": "web-route",
+              "endpointIndex": 0,
+              "originGroupIndex": 0,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/*"],
+              "forwardingProtocol": "HttpsOnly",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled",
+              "customDomainIndex": 0
+            },
+            {
+              "name": "api-route",
+              "endpointIndex": 1,
+              "originGroupIndex": 1,
+              "supportedProtocols": ["Http", "Https"],
+              "patternsToMatch": ["/api/*"],
+              "forwardingProtocol": "HttpsOnly",
+              "linkToDefaultDomain": "Enabled",
+              "httpsRedirect": "Enabled",
+              "customDomainIndex": 1
+            }
+          ],
+          "customDomains": [
+            {
+              "hostName": "loadtest.example.com",
+              "certificateName": "loadtest-example-com",
+              "minimumTlsVersion": "TLS12"
+            },
+            {
+              "hostName": "api-loadtest.example.com",
+              "certificateName": "api-loadtest-example-com",
+              "minimumTlsVersion": "TLS12"
+            }
+          ],
+          "certificateNames": [
+            "loadtest-example-com",
+            "api-loadtest-example-com"
+          ]
+        }
+      ]
+    },
+    "keyVaultConfiguration": {
+      "value": {
+        "keyVaultName": "load-kv-001",
+        "keyVaultResourceGroupName": "load-security-rg",
+        "certificateNames": [
+          "loadtest-example-com",
+          "api-loadtest-example-com"
+        ]
+      }
+    },
+    "commonTags": {
+      "value": {
+        "owner": "Load Test Team",
+        "costCenter": "12345",
+        "project": "Performance Testing",
+        "dataClassification": "Non-Production"
+      }
+    }
+  }
+}
